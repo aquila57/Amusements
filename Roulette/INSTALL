@@ -1,0 +1,22 @@
+Installing roulette:
+
+Install the new curses library.
+
+sudo apt-get install libncurses-dev
+
+Make shell scripts executable.
+
+chmod 755 *.sh
+
+Next compile the programs.
+
+./inst.sh
+
+To de-install etaus:
+
+./deinst.sh
+
+If you make any changes to the etaus library,
+
+./deinst.sh
+./inst.sh
