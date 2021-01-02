@@ -1,0 +1,23 @@
+Installing pxlrace:
+
+Pxlrace requires X Windows.
+
+sudo apt-get install libx11-dev
+
+Make shell scripts executable.
+
+chmod 755 *.sh
+
+Next compile the programs.
+
+./inst.sh
+
+To de-install pxlrace:
+
+./deinst.sh
+
+If you make any changes to the race library,
+
+./deinst.sh
+./inst.sh
+
