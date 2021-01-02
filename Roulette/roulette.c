@@ -52,16 +52,73 @@ void initcrss(void)
 #define ROW_1_12 ('m')
 #define QUIT ('q')
 
+int getnumber(void)
+   {
+   char numstr[4096];
+   int len;
+   int num;
+   getstr(numstr);
+   len = strlen(numstr);
+   if (len < 1)
+      {
+      move(14,1);
+      clrtoeol();
+      addstr("Invalid blank number ");
+      /*      ....v....1....v....2....v....3           */
+      refresh();
+      sleep(2);
+      return(-1);    /* return an invalid number */
+      } /* if blank number */
+   else if (len > 2)
+      {
+      move(14,1);
+      clrtoeol();
+      addstr("Invalid number:  ");
+      /*      ....v....1....v....2....v....3           */
+      move(14,18);
+      addstr(numstr);
+      refresh();
+      sleep(2);
+      return(-1);    /* return an invalid number */
+      } /* if blank number */
+   num = atoi(numstr);
+   if (num < 1 || num > 36)
+      {
+      move(14,1);
+      clrtoeol();
+      addstr("Invalid number:  ");
+      /*      ....v....1....v....2....v....3           */
+      move(14,18);
+      addstr(numstr);
+      refresh();
+      sleep(2);
+      return(-1);    /* return an invalid number */
+      } /* if invalid number of zero or less */
+   return(num);
+   } /* getnumber */
+
 int getbet(void)
    {
+   int len;
    int bet;
    char betstr[4096];
    move(16,1);
    addstr("Enter your bet:  ");
    /*      ....v....1....v....2....v....3           */
    getstr(betstr);
-   move(16,18);
-   addstr(betstr);
+   /***********************************************************/
+   /* if enter a blank number, return invalid bet             */
+   /***********************************************************/
+   len = strlen(betstr);
+   if (!len)
+      {
+      move(16,1);
+      clrtoeol();
+      addstr("Invalid blank bet");
+      refresh();
+      sleep(2);
+      return(-1);
+      } /* if blank bet */
    bet = atoi(betstr);
    /***********************************************************/
    /* edit bet                                                */
@@ -76,14 +133,30 @@ int getbet(void)
       addstr(betstr);
       refresh();
       sleep(2);
-      bet = -1;
+      bet = -1;    /* return invalid bet */
       } /* invalid bet */
    return(bet);
    } /* getbet */
 
+void putspin(int spin)
+   {
+   char str[64];
+   move(18,1);
+   if (spin == 37)
+      {
+      sprintf(str,"Result is 00");
+      } /* if spin == 37 */
+   else
+      {
+      sprintf(str,"Result is %d", spin);
+      } /* else spin is 0 to 36 */
+   addstr(str);
+   refresh();
+   } /* putspin */
+
 int makebet(char cmd, etfmt *et)
    {
-   char numstr[32];
+   char numstr[4096];
    char color[64];
    int num;
    int winloss;
@@ -96,31 +169,17 @@ int makebet(char cmd, etfmt *et)
    strcat(color, "rbrbrbrbrbbrbrbrbrg");
    winloss = 0;
    spin = etausint(et,38);
+   /*********************************************************************/
+   spin = 0;
+   /*********************************************************************/
    if (cmd == NUMBER)
       {
       move(14,1);
       clrtoeol();
       addstr("Enter number 1-36, 0:  ");
       /*      ....v....1....v....2....v....3           */
-      getstr(numstr);
-      move(14,24);
-      addstr(numstr);
-      refresh();
-      num = atoi(numstr);
-      /***********************************************************/
-      /* edit single number                                      */
-      /***********************************************************/
-      if (num < 0 || num > 36)
-         {
-         move(14,1);
-         clrtoeol();
-	 addstr("Invalid number");
-         move(14,16);
-	 addstr(numstr);
-	 refresh();
-	 sleep(2);
-	 return(0);
-	 } /* invalid # */
+      num = getnumber();
+      if (num < 0) return(0);
       bet = getbet();
       if (bet < 0) return(0);
       /***********************************************************/
@@ -137,7 +196,8 @@ int makebet(char cmd, etfmt *et)
 	 refresh();
 	 return(0);
 	 } /* if 00 */
-      else if (spin == num)
+      putspin(spin);
+      if (spin == num)
          {
 	 return(35*bet);
 	 } /* if spin == num */
@@ -156,6 +216,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Double zero");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 00                                                 */
       /***********************************************************/
@@ -178,6 +239,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Even number:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 00                                                 */
       /***********************************************************/
@@ -204,6 +266,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Odd number:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test odd                                                */
       /***********************************************************/
@@ -230,6 +293,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Red number:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test red                                                */
       /***********************************************************/
@@ -259,6 +323,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Black number:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test black                                              */
       /***********************************************************/
@@ -288,6 +353,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Numbers 1-18:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 1-18                                               */
       /***********************************************************/
@@ -310,6 +376,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Numbers 19-36:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 19-36                                              */
       /***********************************************************/
@@ -332,6 +399,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Numbers 1-12:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 1-12                                               */
       /***********************************************************/
@@ -354,6 +422,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Numbers 13-24:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 13-24                                              */
       /***********************************************************/
@@ -376,6 +445,7 @@ int makebet(char cmd, etfmt *et)
       addstr("Numbers 25-36:");
       bet = getbet();
       if (bet < 0) return(0);
+      putspin(spin);
       /***********************************************************/
       /* test 25-36                                              */
       /***********************************************************/
@@ -397,11 +467,8 @@ int makebet(char cmd, etfmt *et)
       clrtoeol();
       addstr("Enter column 1-3:  ");
       /*      ....v....1....v....2....v....3           */
-      getstr(numstr);
-      move(14,20);
-      addstr(numstr);
-      refresh();
-      num = atoi(numstr);
+      num = getnumber();
+      if (num < 0) return(0);
       /***********************************************************/
       /* edit column number                                      */
       /***********************************************************/
@@ -409,9 +476,8 @@ int makebet(char cmd, etfmt *et)
          {
          move(14,1);
          clrtoeol();
-	 addstr("Invalid column number  ");
-         /*      ....v....1....v....2....v....3           */
-         move(14,24);
+	 sprintf(numstr,"Invalid column number:  %d ", num);
+         /*              ....v....1....v....2....v....3     */
 	 addstr(numstr);
 	 refresh();
 	 sleep(2);
@@ -419,8 +485,14 @@ int makebet(char cmd, etfmt *et)
 	 } /* invalid # */
       bet = getbet();
       if (bet < 0) return(0);
-      col = (spin % 3) + 1;
-      if (col == num)
+      putspin(spin);
+      col = (spin % 3);
+      if (!col) col = 3;
+      if (spin < 1 || spin > 36)
+         {
+	 return(-bet);
+	 } /* if spin == 0 or 00 */
+      else if (col == num)
          {
 	 return(2*bet);
 	 } /* if spin == column */
@@ -438,11 +510,8 @@ int makebet(char cmd, etfmt *et)
       clrtoeol();
       addstr("Enter row 1-12:  ");
       /*      ....v....1....v....2....v....3           */
-      getstr(numstr);
-      move(14,18);
-      addstr(numstr);
-      refresh();
-      num = atoi(numstr);
+      num = getnumber();
+      if (num < 0) return(0);
       /***********************************************************/
       /* edit row number                                         */
       /***********************************************************/
@@ -450,9 +519,8 @@ int makebet(char cmd, etfmt *et)
          {
          move(14,1);
          clrtoeol();
-	 addstr("Invalid row number  ");
-         /*      ....v....1....v....2....v....3           */
-         move(14,21);
+	 sprintf(numstr,"Invalid row number:  %d ", num);
+         /*              ....v....1....v....2....v....3     */
 	 addstr(numstr);
 	 refresh();
 	 sleep(2);
@@ -460,8 +528,13 @@ int makebet(char cmd, etfmt *et)
 	 } /* invalid # */
       bet = getbet();
       if (bet < 0) return(0);
-      row = (spin / 12) + 1;
-      if (row == num)
+      putspin(spin);
+      row = ((spin-1) / 3) + 1;
+      if (spin < 1 || spin > 36)
+         {
+	 return(-bet);
+	 } /* if spin == 0 or 00 */
+      else if (row == num)
          {
 	 return(11*bet);
 	 } /* if spin == row */
@@ -530,14 +603,14 @@ int main()
       /*********************************************************/
       /* show win/loss                                         */
       /*********************************************************/
-      move(18,1);
+      move(20,1);
       clrtoeol();
       if (rslt > 0)
          {
          addstr("You won  ");
          /*      ....v....1....v....2....v....3           */
          sprintf(str,"$%d", rslt);
-         move(18,10);
+         move(20,10);
          addstr(str);
          refresh();
 	 } /* if won */
@@ -546,7 +619,7 @@ int main()
          addstr("You lost  ");
          /*      ....v....1....v....2....v....3           */
          sprintf(str,"$%d", -rslt);
-         move(18,11);
+         move(20,11);
          addstr(str);
          refresh();
 	 } /* if won */
@@ -555,7 +628,7 @@ int main()
          addstr("Win/loss:  ");
          /*      ....v....1....v....2....v....3           */
          sprintf(str,"$%d", rslt);
-         move(18,12);
+         move(20,12);
          addstr(str);
          refresh();
 	 } /* else win/loss = 0 */
@@ -564,13 +637,13 @@ int main()
       /*********************************************************/
       dblcash += (double) rslt;
       sprintf(str,"$%.0f", dblcash);
-      move(20,1);
+      move(20,40);
       clrtoeol();
       addstr("Total cash:  ");
-      /*      ....v....1....v....2....v....3           */
-      move(20,14);
+      /*      4....v....5....v....6....v....7           */
+      move(20,53);
       addstr(str);
-      move(22,30);
+      move(22,25);
       addstr("Press any key to continue");
       refresh();
       getch();
